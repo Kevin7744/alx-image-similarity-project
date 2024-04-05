@@ -5,6 +5,7 @@
 
 # file and folders
 .env
+notes.txt
 
 # User-specific files
 *.rsuser
