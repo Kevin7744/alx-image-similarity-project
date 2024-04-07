@@ -50,10 +50,9 @@ image_embedding_model = SentenceTransformer(IMAGE_EMBEDDING_MODEL)
 
 # print("All images uploaded.")
 
+
 # Function to create image embedding
-def create_image_embedding(image_path):
-    with open(image_path, "rb") as f:
-        image_data = f.read()
+def create_image_embedding(image_data):
     image = Image.open(BytesIO(image_data))
     image_embedding = image_embedding_model.encode([image.convert("RGB")])[0]
     return image_data, image_embedding.tolist()
@@ -87,7 +86,8 @@ if uploaded_file is not None:
 
     if st.button('Find Similar Images'):
         # Process the uploaded image
-        image_data, query_embedding = create_image_embedding(uploaded_file)
+        image_data = uploaded_file.read()
+        query_image_data, query_embedding = create_image_embedding(image_data)
 
         # Get embeddings from Supabase
         db_embeddings, ids = get_supabase_embeddings()
@@ -98,5 +98,4 @@ if uploaded_file is not None:
         # Display similar images
         for similar_id in similar_ids:
             similar_image_data = supabase.table("Image embeddings").select("image_data").eq("id", similar_id).execute().data[0]['image_data']
-            similar_image = Image.open(BytesIO(base64.b64decode(similar_image_data)))
-            st.image(similar_image, caption=f'Similar Image (ID: {similar_id})', use_column_width=True)
+            st.image(BytesIO(base64.b64decode(similar_image_data)), caption=f'Similar Image (ID: {similar_id})', use_column_width=True)
